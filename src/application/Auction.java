@@ -15,6 +15,8 @@ public class Auction {
   private LocalDateTime startDate;
   private LocalDateTime endDate;
   private AuctionStatus state;
+  private Integer nowPrice;
+  private String bidder;
 
   public Auction(User user, String userName, String itemDescription, int startPrice, LocalDateTime startDate, LocalDateTime endDate)
       throws NotSellerCreateAuctionException, NoneLoggedInUserCreateAuctionException, StartTimeIsGreaterEndTimeException, StartTimeIsPassedDateException {
@@ -38,6 +40,7 @@ public class Auction {
     this.userName = userName;
     this.itemDescription = itemDescription;
     this.startPrice = startPrice;
+    this.nowPrice = startPrice;
     this.startDate = startDate;
     this.endDate = endDate;
     this.state = AuctionStatus.BEFORE_START;
@@ -48,7 +51,27 @@ public class Auction {
     return this.state;
   }
 
-  public void start() {
+  public void onStart() {
     this.state = AuctionStatus.STARTED;
+  }
+
+  public Integer getNowPrice() {
+    return this.nowPrice;
+  }
+
+  public String getBidder() {
+    return this.bidder;
+  }
+
+  public void setNowPrice(int bidPrice) {
+    this.nowPrice = bidPrice;
+  }
+
+  public void setBidder(String userName) {
+    this.bidder = userName;
+  }
+
+  public String getUserName() {
+    return this.userName;
   }
 }

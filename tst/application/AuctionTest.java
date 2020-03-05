@@ -5,15 +5,22 @@
 
 package application;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.*;
 
 public class AuctionTest {
+
+  private Users users;
+
+  @Before
+  public void setup() {
+    this.users = new Users();
+  }
 
   private User generateSellerData(){
     String firstName = "田中";
@@ -25,17 +32,31 @@ public class AuctionTest {
     return new User(firstName, lastName, userEmail,userName, password);
   }
 
+
+  private User generateSuzukiData(){
+    String firstName = "鈴木";
+    String lastName = "一郎";
+    String userEmail = "suzuki@suzuki.com";
+    String userName = "suzuki";
+    String password = "pass";
+
+    return new User(firstName, lastName, userEmail,userName, password);
+  }
+
+  private User generateDavidData(){
+    String firstName = "David";
+    String lastName = "Bernstein";
+    String userEmail = "bernstein@david.com";
+    String userName = "david";
+    String password = "csd";
+
+    return new User(firstName, lastName, userEmail,userName, password);
+  }
+
   @Test
   public void test_create_auction_by_seller() throws Exception {
-      User user = generateSellerData();
-      user.setSellerFlag(true);
-
-      Users users = new Users();
-      users.register(user);
-      users.login(user.getUserName(), user.getPassword());
-      Auction auction = new Auction(user, "tarou", "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0));
-
-      assertEquals(auction.getState(), AuctionStatus.BEFORE_START);
+    Auction auction = startAuction();
+    assertEquals(auction.getState(), AuctionStatus.BEFORE_START);
 
   }
 
@@ -93,15 +114,73 @@ public class AuctionTest {
 
   @Test
   public void test_can_change_auction_state() throws Exception{
-    User user = generateSellerData();
-    user.setSellerFlag(true);
-
-    Users users = new Users();
-    users.register(user);
-    users.login(user.getUserName(), user.getPassword());
-    Auction auction = new Auction(user, "tarou", "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0));
-    auction.start();
+    Auction auction = startAuction();
+    auction.onStart();
     assertEquals(auction.getState(), AuctionStatus.STARTED);
   }
 
+  @Test
+  public void test_can_bid_auction() throws Exception{
+    Auction auction = startAuction();
+    auction.onStart();
+
+    User suzuki = generateSuzukiData();
+    users.register(suzuki);
+    users.login(suzuki.getUserName(), suzuki.getPassword());
+
+    suzuki.bid(auction, 1);
+
+    assertThat(auction.getNowPrice(), is(1));
+    assertThat(auction.getBidder(), is(suzuki.getUserName()));
+
+  }
+
+  @Test(expected = NoneLoggedInBidAuction.class )
+  public void test_need_login_bid_auction() throws Exception{
+    Auction auction = startAuction();
+    auction.onStart();
+
+    User suzuki = generateSuzukiData();
+    users.register(suzuki);
+
+    suzuki.bid(auction, 1);
+
+  }
+
+  @Test(expected = SamePriceException.class)
+  public void test_same_price_can_not_bid_twice() throws Exception {
+    Auction auction = startAuction();
+
+    User suzuki = generateSuzukiData();
+    users.register(suzuki);
+    users.login(suzuki.getUserName(), suzuki.getPassword());
+
+    suzuki.bid(auction, 1);
+
+    User david = generateDavidData();
+    users.register(david);
+    users.login(david.getUserName(), david.getPassword());
+
+    david.bid(auction, 1);
+
+  }
+
+  @Test(expected = AuctionCreaterBidException.class)
+  public void test_Auction_creator_can_not_bid_own_auction() throws Exception{
+    Auction auction = startAuction();
+    User user = generateSellerData();
+    User seller = this.users.findByUserName(user.getUserName());
+
+    seller.bid(auction, 1);
+
+  }
+
+  private Auction startAuction() throws Exception {
+    User user = generateSellerData();
+    user.setSellerFlag(true);
+
+    users.register(user);
+    users.login(user.getUserName(), user.getPassword());
+    return new Auction(user, "tarou", "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0));
+  }
 }

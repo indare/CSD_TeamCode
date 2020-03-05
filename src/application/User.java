@@ -1,5 +1,7 @@
 package application;
 
+import static java.util.Objects.isNull;
+
 public class User {
 
   private String firstName;
@@ -53,5 +55,23 @@ public class User {
 
   public boolean getSellerFlag() {
     return this.sellerFlag;
+  }
+
+  public void bid(Auction auction, int bidPrice) throws SamePriceException, AuctionCreaterBidException, NoneLoggedInBidAuction {
+
+    if(!this.loginFlag){
+      throw new NoneLoggedInBidAuction();
+    }
+
+    if (auction.getUserName().equals(this.userName)){
+      throw new AuctionCreaterBidException();
+    }
+
+    if (!isNull(auction.getBidder()) && auction.getNowPrice().equals(bidPrice)){
+      throw new SamePriceException();
+    }
+
+    auction.setBidder(this.userName);
+    auction.setNowPrice(bidPrice);
   }
 }
