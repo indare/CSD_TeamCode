@@ -74,4 +74,8 @@ public class Auction {
   public String getUserName() {
     return this.userName;
   }
+
+  public void onClose() {
+    this.state = AuctionStatus.ENDED;
+  }
 }

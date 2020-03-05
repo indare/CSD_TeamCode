@@ -113,10 +113,18 @@ public class AuctionTest {
   }
 
   @Test
-  public void test_can_change_auction_state() throws Exception{
+  public void test_can_change_auction_start() throws Exception{
     Auction auction = startAuction();
     auction.onStart();
     assertEquals(auction.getState(), AuctionStatus.STARTED);
+  }
+
+  @Test
+  public void test_can_change_auction_close() throws Exception{
+    Auction auction = startAuction();
+    auction.onStart();
+    auction.onClose();
+    assertEquals(auction.getState(), AuctionStatus.ENDED);
   }
 
   @Test
@@ -134,6 +142,7 @@ public class AuctionTest {
     assertThat(auction.getBidder(), is(suzuki.getUserName()));
 
   }
+
 
   @Test(expected = NoneLoggedInBidAuction.class )
   public void test_need_login_bid_auction() throws Exception{
