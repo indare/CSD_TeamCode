@@ -7,6 +7,7 @@ package application;
 
 import org.junit.Before;
 import org.junit.Test;
+import services.PostOffice;
 
 import java.time.LocalDateTime;
 
@@ -181,6 +182,36 @@ public class AuctionTest {
     User seller = this.users.findByUserName(user.getUserName());
 
     seller.bid(auction, 1);
+
+  }
+
+  @Test
+  public void test_no_bid_auction_closed() throws Exception {
+    Auction auction = startAuction();
+    auction.onClose();
+
+    PostOffice postOffice = PostOffice.getInstance();
+    assertTrue(postOffice.doesLogContain(generateSellerData().getUserEmail(), auction.getItemName()));
+
+  }
+
+  @Test
+  public void test_bid_auction_closed() throws Exception {
+    Auction auction = startAuction();
+
+    User suzuki = generateSuzukiData();
+    users.register(suzuki);
+    users.login(suzuki.getUserName(), suzuki.getPassword());
+    suzuki.bid(auction, 1);
+
+    auction.onClose();
+
+    String soldMessageInclude = "販売されました";
+    String winnerMessageInclude = "落札しました";
+
+    PostOffice postOffice = PostOffice.getInstance();
+    assertTrue(postOffice.doesLogContain(generateSellerData().getUserEmail(), soldMessageInclude));
+    assertTrue(postOffice.doesLogContain(suzuki.getUserEmail(), winnerMessageInclude) );
 
   }
 

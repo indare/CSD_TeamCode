@@ -72,6 +72,7 @@ public class User {
     }
 
     auction.setBidder(this.userName);
+    auction.setBidderUser(this);
     auction.setNowPrice(bidPrice);
   }
 }
