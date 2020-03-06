@@ -1,66 +1,67 @@
 package application;
 
-import static java.util.Objects.isNull;
+import application.exception.EBabyException;
 
 public class User {
 
-  private String firstName;
-  private String lastName;
-  private String userEmail;
-  private String userName;
-  private String password;
-  private Boolean loginFlag;
-  private boolean sellerFlag;
+    private String firstName;
+    private String lastName;
+    private String userEmail;
+    private String userName;
+    private String password;
+    private Boolean loginFlag;
+    private Boolean sellerFlag;
 
-  public User(String firstName, String lastName, String userEmail, String userName, String password) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.userEmail = userEmail;
-    this.userName = userName;
-    this.password = password;
-    this.loginFlag = false;
-  }
+    public User(String firstName, String lastName, String userEmail, String userName, String password) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.userEmail = userEmail;
+        this.userName = userName;
+        this.password = password;
+        this.loginFlag = false;
+        this.sellerFlag = false;
+    }
 
-  public String getFirstName() {
-    return firstName;
-  }
+    public String getFirstName() {
+        return firstName;
+    }
 
-  public String getUserName() {
-    return userName;
-  }
+    public String getUserName() {
+        return userName;
+    }
 
-  public String getLastName() {
-    return lastName;
-  }
+    public String getLastName() {
+        return lastName;
+    }
 
-  public String getUserEmail() {
-    return userEmail;
-  }
+    public String getUserEmail() {
+        return userEmail;
+    }
 
-  public String getPassword() {
-    return password;
-  }
+    public String getPassword() {
+        return password;
+    }
 
-  public boolean getLoginFlag() {
-    return loginFlag;
-  }
+    public Boolean getLoginFlag() {
+        return loginFlag;
+    }
 
-  public void setLoginFlag(boolean loginFlag) {
-    this.loginFlag = loginFlag;
-  }
+    public void setLoginFlag(Boolean loginFlag) {
+        this.loginFlag = loginFlag;
+    }
 
-  public void setSellerFlag(boolean sellerFlag) {
-    this.sellerFlag = sellerFlag;
-  }
+    public void setSellerFlag(Boolean sellerFlag) {
+        this.sellerFlag = sellerFlag;
+    }
 
-  public boolean getSellerFlag() {
-    return this.sellerFlag;
-  }
+    public Boolean getSellerFlag() {
+        return this.sellerFlag;
+    }
 
-  public void bid(Auction auction, int bidPrice) throws SamePriceException, AuctionCreaterBidException, NoneLoggedInBidAuction {
+    public void bid(Auction auction, Integer bidPrice) throws EBabyException {
 
-    AuctionBidRule.check(auction,this, bidPrice);
-    auction.setBidderUser(this);
-    auction.setNowPrice(bidPrice);
-  }
+        AuctionBidRule.check(auction, this, bidPrice);
+        auction.setBidderUser(this);
+        auction.setNowPrice(bidPrice);
+    }
 }

@@ -11,7 +11,7 @@ public class Notice {
         this.message = message;
     }
 
-    public void send(){
+    public void send() {
         PostOffice postOffice = PostOffice.getInstance();
         postOffice.sendEMail(this.to, this.message);
     }

@@ -1,5 +1,10 @@
 package application;
 
+import application.exception.DuplicatedUserNameException;
+import application.exception.EBabyException;
+import application.exception.WrongPasswordException;
+import application.exception.WrongUsernameException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +28,7 @@ public class Users {
     }
   }
 
-  public void login(String userName, String password) throws WrongPasswordException, WrongUsernameException {
+  public void login(String userName, String password) throws EBabyException {
     User findUser = findByUserName(userName);
 
     if (password.equals(findUser.getPassword())) {
@@ -34,19 +39,19 @@ public class Users {
     }
   }
 
-  public void logout(String userName) throws Exception {
+  public void logout(String userName) throws EBabyException {
     User findUser = findByUserName(userName);
     findUser.setLoginFlag(false);
     this.user.put(findUser.getUserName(), findUser);
   }
 
-  public void setSeller(String userName) throws Exception {
+  public void setSeller(String userName) throws EBabyException {
     User findUser = findByUserName(userName);
     findUser.setSellerFlag(true);
     this.user.put(findUser.getUserName(), findUser);
   }
 
-  public boolean isSeller(String userName) throws Exception {
+  public Boolean isSeller(String userName) throws EBabyException {
     User findUser = findByUserName(userName);
     return findUser.getSellerFlag();
   }

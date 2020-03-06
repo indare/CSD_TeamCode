@@ -1,5 +1,7 @@
 package application.commission;
 
+import static application.parameters.Parameters.DELIVERY_COST;
+
 public class EtcCommission extends Commission {
     public EtcCommission(Integer nowPrice) {
         super(nowPrice);
@@ -7,6 +9,6 @@ public class EtcCommission extends Commission {
 
     @Override
     public Integer getCommission() {
-        return this.getNowPrice() + 10;
+        return this.getNowPrice() + DELIVERY_COST;
     }
 }

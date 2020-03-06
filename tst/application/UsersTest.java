@@ -1,5 +1,9 @@
 package application;
 
+import application.exception.DuplicatedUserNameException;
+import application.exception.EBabyException;
+import application.exception.WrongPasswordException;
+import application.exception.WrongUsernameException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -29,7 +33,7 @@ public class UsersTest {
   }
 
   @Test
-  public void test_register_user () throws Exception {
+  public void test_register_user () throws EBabyException {
 
     User user = generateTanakaSanData();
 
@@ -47,8 +51,8 @@ public class UsersTest {
     assertFalse(actual.getLoginFlag());
   }
 
-  @Test(expected=DuplicatedUserNameException.class)
-  public void test_reject_duplicate_user_name () throws Exception {
+  @Test(expected= DuplicatedUserNameException.class)
+  public void test_reject_duplicate_user_name () throws EBabyException {
 
     User user = generateTanakaSanData();
 
@@ -59,7 +63,7 @@ public class UsersTest {
   }
 
   @Test
-  public void test_do_login() throws Exception {
+  public void test_do_login() throws EBabyException {
 
     User user = generateTanakaSanData();
 
@@ -72,8 +76,8 @@ public class UsersTest {
     assertTrue(loginUser.getLoginFlag());
   }
 
-  @Test(expected=WrongUsernameException.class)
-  public void test_user_login_scenario() throws Exception {
+  @Test(expected= WrongUsernameException.class)
+  public void test_user_login_scenario() throws EBabyException {
     User tanaka = generateTanakaSanData();
     User suzuki = generateSuzukiSanData();
 
@@ -89,8 +93,8 @@ public class UsersTest {
     users.login(suzuki.getUserName() + "wrong", suzuki.getPassword());
   }
 
-  @Test(expected=WrongPasswordException.class)
-  public void test_wrong_password_input_and_login_scenario() throws Exception {
+  @Test(expected= WrongPasswordException.class)
+  public void test_wrong_password_input_and_login_scenario() throws EBabyException {
     User suzuki = generateSuzukiSanData();
 
     Users users = new Users();
@@ -100,7 +104,7 @@ public class UsersTest {
   }
 
   @Test
-  public void test_logout() throws Exception {
+  public void test_logout() throws EBabyException {
     User tanaka = generateTanakaSanData();
 
     Users users = new Users();
@@ -115,7 +119,7 @@ public class UsersTest {
   }
 
   @Test
-  public void test_set_seller_flag() throws Exception {
+  public void test_set_seller_flag() throws EBabyException {
     User tanaka = generateTanakaSanData();
 
     Users users = new Users();

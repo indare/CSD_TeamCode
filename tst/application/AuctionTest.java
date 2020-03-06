@@ -1,13 +1,14 @@
 package application;
 
-import com.sun.tools.javadoc.Start;
+import application.exception.*;
 import org.junit.*;
+import services.AlwaysFalseOffHours;
+import services.AlwaysTrueOffHours;
 import services.AuctionLogger;
 import services.PostOffice;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -15,10 +16,12 @@ import static org.junit.Assert.*;
 public class AuctionTest {
 
   private Users users;
+  private AlwaysTrueOffHours alwaysTrueOffHours;
 
   @Before
   public void setup() {
     this.users = new Users();
+    this.alwaysTrueOffHours = new AlwaysTrueOffHours();
   }
 
   private User generateSellerData(){
@@ -60,8 +63,8 @@ public class AuctionTest {
   }
 
 
-  @Test (expected=NotSellerCreateAuctionException.class)
-  public void test_NotSeller_can_not_create_auction() throws Exception {
+  @Test (expected= NotSellerCreateAuctionException.class)
+  public void test_NotSeller_can_not_create_auction() throws EBabyException {
     User tanaka = generateSellerData();
 
     Users users = new Users();
@@ -72,7 +75,7 @@ public class AuctionTest {
   }
 
   @Test (expected= NoneLoggedInUserCreateAuctionException.class)
-  public void test_create_auction_need_login() throws Exception {
+  public void test_create_auction_need_login() throws EBabyException {
     User tanaka = generateSellerData();
 
     Users users = new Users();
@@ -84,7 +87,7 @@ public class AuctionTest {
   }
 
   @Test (expected = StartTimeIsGreaterEndTimeException.class)
-  public void test_auction_startTime_should_be_smaller_than_endTime() throws Exception{
+  public void test_auction_startTime_should_be_smaller_than_endTime() throws EBabyException {
     User tanaka = generateSellerData();
 
     Users users = new Users();
@@ -98,7 +101,7 @@ public class AuctionTest {
   }
 
   @Test (expected = StartTimeIsPassedDateException.class)
-  public void test_auction_startTime_should_be_more_than_now() throws Exception{
+  public void test_auction_startTime_should_be_more_than_now() throws EBabyException {
     User tanaka = generateSellerData();
 
     Users users = new Users();
@@ -112,14 +115,14 @@ public class AuctionTest {
   }
 
   @Test
-  public void test_can_change_auction_start() throws Exception{
+  public void test_can_change_auction_start() throws EBabyException {
     Auction auction = startAuction();
     auction.onStart();
     assertEquals(auction.getState(), AuctionStatus.STARTED);
   }
 
   @Test
-  public void test_can_change_auction_close() throws Exception{
+  public void test_can_change_auction_close() throws EBabyException {
     Auction auction = startAuction();
     auction.onStart();
     auction.onClose();
@@ -142,7 +145,7 @@ public class AuctionTest {
 
   }
 
-  @Test(expected = NoneLoggedInBidAuction.class )
+  @Test(expected = NoneLoggedInBidAuctionException.class )
   public void test_need_login_bid_auction() throws Exception{
     Auction auction = startAuction();
     auction.onStart();
@@ -172,7 +175,7 @@ public class AuctionTest {
 
   }
 
-  @Test(expected = AuctionCreaterBidException.class)
+  @Test(expected = AuctionCreatorBidException.class)
   public void test_Auction_creator_can_not_bid_own_auction() throws Exception{
     Auction auction = startAuction();
     User user = generateSellerData();
@@ -309,7 +312,7 @@ public class AuctionTest {
   @Test
   public void test_none_logged_sale_at_cheep_etc_item() throws Exception {
 
-    Auction auction = startAuction();
+    Auction auction = startAuctionForOnTime();
 
     User suzuki = generateSuzukiData();
     users.register(suzuki);
@@ -360,6 +363,31 @@ public class AuctionTest {
 
   }
 
+  @Test
+  public void test_logged_ended_all_auctions_when_closed() throws Exception {
+    Auction auction = startAuctionForOffHour();
+
+    User suzuki = generateSuzukiData();
+    users.register(suzuki);
+    users.login(suzuki.getUserName(), suzuki.getPassword());
+    suzuki.bid(auction, 1);
+
+    auction.onClose();
+
+    String sellerMessage = auction.getItemName() + "のオークションに" +
+            auction.getBidderUser().getUserEmail() + "が" +
+            auction.getNowPrice() + "で販売されました。";
+
+    String bidderMessage = "おめでとうございます。" +
+            auction.getBidderUser().getUserEmail() + "からの" +
+            auction.getItemName() + "のオークションを" +
+            auction.getNowPrice() + "で落札しました。";
+
+    AuctionLogger auctionLogger = AuctionLogger.getInstance();
+    assertTrue(auctionLogger.findMessage(fileName, sellerMessage));
+    assertTrue(auctionLogger.findMessage(fileName, bidderMessage));
+  }
+
   private static String fileName =  "log/log.txt";
 
   @AfterClass
@@ -368,32 +396,62 @@ public class AuctionTest {
     newdir.delete();
   }
 
-  private Auction startAuction() throws Exception {
+  private Auction startAuction() throws EBabyException {
     User user = generateSellerData();
     user.setSellerFlag(true);
 
     users.register(user);
     users.login(user.getUserName(), user.getPassword());
-    return new Auction(user, GoodsCategory.ETC,  "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0));
+    return new Auction(user, GoodsCategory.ETC,  "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0), alwaysTrueOffHours);
   }
 
-
-  private Auction startDownloadSoftAuction() throws Exception {
+  private Auction startAuctionForOffHour() throws EBabyException {
     User user = generateSellerData();
     user.setSellerFlag(true);
 
     users.register(user);
     users.login(user.getUserName(), user.getPassword());
-    return new Auction(user, GoodsCategory.DOWNLOAD_SOFTWARE,  "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0));
+    return new Auction(user,
+            GoodsCategory.ETC,
+            "リーダブルコード",
+            1,
+            LocalDateTime.of(2020, 3, 10, 12,0,0),
+            LocalDateTime.of(2020, 3, 11, 12,0,0),
+            alwaysTrueOffHours);
   }
 
-  private Auction startCarAuction() throws Exception {
+  private Auction startAuctionForOnTime() throws EBabyException {
     User user = generateSellerData();
     user.setSellerFlag(true);
 
     users.register(user);
     users.login(user.getUserName(), user.getPassword());
-    return new Auction(user, GoodsCategory.CAR,  "car", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0));
+    AlwaysFalseOffHours alwaysFalseOffHours = new AlwaysFalseOffHours();
+    return new Auction(user,
+            GoodsCategory.ETC,
+            "aaaaaa",
+            1,
+            LocalDateTime.of(2020, 3, 10, 12,0,0),
+            LocalDateTime.of(2020, 3, 11, 12,0,0),
+            alwaysFalseOffHours);
+  }
+
+  private Auction startDownloadSoftAuction() throws EBabyException {
+    User user = generateSellerData();
+    user.setSellerFlag(true);
+
+    users.register(user);
+    users.login(user.getUserName(), user.getPassword());
+    return new Auction(user, GoodsCategory.DOWNLOAD_SOFTWARE,  "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0), alwaysTrueOffHours);
+  }
+
+  private Auction startCarAuction() throws EBabyException {
+    User user = generateSellerData();
+    user.setSellerFlag(true);
+
+    users.register(user);
+    users.login(user.getUserName(), user.getPassword());
+    return new Auction(user, GoodsCategory.CAR,  "car", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0), alwaysTrueOffHours);
   }
 
 }

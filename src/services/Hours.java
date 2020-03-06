@@ -1,5 +1,5 @@
 package services;
 
 public interface Hours {
-	public boolean isOffHours();
+	Boolean isOffHours();
 }

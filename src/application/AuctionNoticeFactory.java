@@ -1,8 +1,10 @@
 package application;
 
-import services.PostOffice;
+import application.emailMessage.ForBidderMessage;
+import application.emailMessage.ForSellerMessage;
+import application.emailMessage.MessageBuilder;
+import application.emailMessage.NoBidderMessage;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,25 +23,22 @@ public class AuctionNoticeFactory {
         List<Notice> ret = new ArrayList<>();
 
         if (isNull(this.auction.getBidderUser())) {
-            String message = auction.getItemName() + "のオークションに入札者はいませんでした。";
 
-            Notice notice = new Notice(this.auction.getCreateUser().getUserEmail(),message);
+            MessageBuilder messageBuilder = new NoBidderMessage(this.auction);
+
+            Notice notice = new Notice(this.auction.getCreateUser().getUserEmail(),messageBuilder.build());
             ret.add(notice);
+
         } else {
 
-            String sellerMessage = this.auction.getItemName() + "のオークションに" +
-                    this.auction.getBidderUser().getUserEmail() + "が" +
-                    this.auction.getNowPrice() + "で販売されました。";
+            MessageBuilder forSellerMessage = new ForSellerMessage(this.auction);
 
-            Notice noticeForSeller = new Notice(this.auction.getCreateUser().getUserEmail(),sellerMessage);
+            Notice noticeForSeller = new Notice(this.auction.getCreateUser().getUserEmail(),forSellerMessage.build());
             ret.add(noticeForSeller);
 
-            String bidderMessage = "おめでとうございます。" +
-                    this.auction.getBidderUser().getUserEmail() + "からの" +
-                    this.auction.getItemName() + "のオークションを" +
-                    this.auction.getNowPrice() + "で落札しました。";
+            MessageBuilder forBidderMessage = new ForBidderMessage(this.auction);
 
-            Notice noticeForBidder = new Notice(this.auction.getBidderUser().getUserEmail(),bidderMessage);
+            Notice noticeForBidder = new Notice(this.auction.getBidderUser().getUserEmail(),forBidderMessage.build());
             ret.add(noticeForBidder);
 
         }

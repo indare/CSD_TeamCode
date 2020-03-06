@@ -2,14 +2,20 @@
 package application;
 
 
+import application.exception.*;
 import services.AuctionLogger;
+import services.Hours;
+import services.OffHours;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static application.parameters.Parameters.*;
+
 public class Auction {
+
     private String itemName;
-    private int startPrice;
+    private Integer startPrice;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private AuctionStatus state;
@@ -19,9 +25,9 @@ public class Auction {
     private GoodsCategory goodsCategory;
     private Integer sellerPrice;
     private Integer buyerPrice;
+    private Hours hours;
 
-    public Auction(User createUser, GoodsCategory goodsCategory,String itemName, int startPrice, LocalDateTime startDate, LocalDateTime endDate)
-            throws NotSellerCreateAuctionException, NoneLoggedInUserCreateAuctionException, StartTimeIsGreaterEndTimeException, StartTimeIsPassedDateException {
+    public Auction(User createUser, GoodsCategory goodsCategory, String itemName, Integer startPrice, LocalDateTime startDate, LocalDateTime endDate) throws EBabyException {
 
         if (!createUser.getSellerFlag()) {
             throw new NotSellerCreateAuctionException();
@@ -47,7 +53,14 @@ public class Auction {
         this.state = AuctionStatus.BEFORE_START;
         this.createUser = createUser;
         this.goodsCategory = goodsCategory;
+        this.hours = OffHours.getInstance();
     }
+
+    public Auction(User createUser, GoodsCategory goodsCategory, String itemName, Integer startPrice, LocalDateTime startDate, LocalDateTime endDate, Hours hours) throws EBabyException {
+        this(createUser, goodsCategory, itemName, startPrice, startDate, endDate);
+        this.hours = hours;
+    }
+
 
     public AuctionStatus getState() {
         return this.state;
@@ -61,14 +74,14 @@ public class Auction {
         return this.nowPrice;
     }
 
-    public void setNowPrice(int bidPrice) {
+    public void setNowPrice(Integer bidPrice) {
         this.nowPrice = bidPrice;
     }
 
     public void onClose() {
         this.state = AuctionStatus.ENDED;
 
-        this.sellerPrice = (int) (0.98 * this.nowPrice);
+        this.sellerPrice = (int) (TRANSACTION_FEE * this.nowPrice);
 
         AuctionCommissionRuleFactory auctionCommissionRuleFactory = new AuctionCommissionRuleFactory(this);
         this.buyerPrice = auctionCommissionRuleFactory.calcCommission().getCommission();
@@ -76,16 +89,18 @@ public class Auction {
         AuctionNoticeFactory factory = new AuctionNoticeFactory(this);
         List<Notice> noticeList = factory.getNotice();
 
-        noticeList.forEach(
-                (Notice it) -> {
-                    it.send();
-                }
-        );
+        AuctionLogger auctionLogger = AuctionLogger.getInstance();
 
-        if (this.goodsCategory.equals(GoodsCategory.CAR) || this.nowPrice >= 10000) {
-            AuctionLogger auctionLogger = AuctionLogger.getInstance();
-            noticeList.forEach(notice -> auctionLogger.log("log/log.txt", notice.getMessage()));
-        }
+        noticeList.forEach( notice -> {
+            notice.send();
+            if (needLogging()) {
+                auctionLogger.log(LOG_FILE, notice.getMessage());
+            }
+        });
+    }
+
+    private Boolean needLogging() {
+        return this.hours.isOffHours() || this.goodsCategory.equals(GoodsCategory.CAR) || this.nowPrice >= HIGH_PRICE;
     }
 
     public String getItemName() {

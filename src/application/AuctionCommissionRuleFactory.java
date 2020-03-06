@@ -2,8 +2,9 @@ package application;
 
 import application.commission.*;
 
-public class AuctionCommissionRuleFactory {
+import static application.parameters.Parameters.LUXURY_TAX_BORDER;
 
+public class AuctionCommissionRuleFactory {
     private Auction auction;
 
     public AuctionCommissionRuleFactory(Auction auction) {
@@ -13,14 +14,14 @@ public class AuctionCommissionRuleFactory {
     public Commission calcCommission() {
         if (this.auction.getGoodsCategory().equals(GoodsCategory.ETC)) {
             return new EtcCommission(auction.getNowPrice());
-        } else if (this.auction.getGoodsCategory().equals(GoodsCategory.CAR)){
-            if (this.auction.getNowPrice() >= 50000) {
+        } else if (this.auction.getGoodsCategory().equals(GoodsCategory.CAR)) {
+            if (this.auction.getNowPrice() >= LUXURY_TAX_BORDER) {
                 LuxuryTaxCommission luxuryTaxCommission =
                         new LuxuryTaxCommission(auction.getNowPrice());
                 return new CarShipCommission(
                         luxuryTaxCommission.getCommission()
                 );
-            }else{
+            } else {
                 return new CarShipCommission(auction.getNowPrice());
             }
 

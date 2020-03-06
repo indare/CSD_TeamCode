@@ -1,5 +1,7 @@
 package application.commission;
 
+import static application.parameters.Parameters.LUXURY_TAX_RATE;
+
 public class LuxuryTaxCommission extends Commission{
     public LuxuryTaxCommission(Integer nowPrice) {
         super(nowPrice);
@@ -7,6 +9,6 @@ public class LuxuryTaxCommission extends Commission{
 
     @Override
     public Integer getCommission() {
-        return  (int) (this.getNowPrice() * 1.04) ;
+        return  (int) (this.getNowPrice() * LUXURY_TAX_RATE) ;
     }
 }
