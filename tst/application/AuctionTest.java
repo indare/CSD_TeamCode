@@ -1,8 +1,3 @@
-/*
- * (c)Copyright Since 2020, SOFTBANK Corp. All rights reserved.
- *
- */
-
 package application;
 
 import org.junit.Before;
