@@ -1,10 +1,11 @@
 package application;
 
 import com.sun.tools.javadoc.Start;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import services.AuctionLogger;
 import services.PostOffice;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -275,6 +276,96 @@ public class AuctionTest {
 
     assertThat(auction.getSellerPrice(), is(SellerPrice));
     assertThat(auction.getBuyerPrice(), is(BuyerPrice));
+  }
+
+
+  @Test
+  public void test_logged_sell_car() throws Exception {
+
+    Auction auction = startCarAuction();
+
+    User suzuki = generateSuzukiData();
+    users.register(suzuki);
+    users.login(suzuki.getUserName(), suzuki.getPassword());
+    suzuki.bid(auction, 100);
+
+    auction.onClose();
+
+    String sellerMessage = auction.getItemName() + "のオークションに" +
+            auction.getBidderUser().getUserEmail() + "が" +
+            auction.getNowPrice() + "で販売されました。";
+
+    String bidderMessage = "おめでとうございます。" +
+            auction.getBidderUser().getUserEmail() + "からの" +
+            auction.getItemName() + "のオークションを" +
+            auction.getNowPrice() + "で落札しました。";
+
+    AuctionLogger auctionLogger = AuctionLogger.getInstance();
+    assertTrue(auctionLogger.findMessage(fileName, sellerMessage));
+    assertTrue(auctionLogger.findMessage(fileName, bidderMessage));
+
+  }
+
+  @Test
+  public void test_none_logged_sale_at_cheep_etc_item() throws Exception {
+
+    Auction auction = startAuction();
+
+    User suzuki = generateSuzukiData();
+    users.register(suzuki);
+    users.login(suzuki.getUserName(), suzuki.getPassword());
+    suzuki.bid(auction, 100);
+
+    auction.onClose();
+
+    String sellerMessage = auction.getItemName() + "のオークションに" +
+            auction.getBidderUser().getUserEmail() + "が" +
+            auction.getNowPrice() + "で販売されました。";
+
+    String bidderMessage = "おめでとうございます。" +
+            auction.getBidderUser().getUserEmail() + "からの" +
+            auction.getItemName() + "のオークションを" +
+            auction.getNowPrice() + "で落札しました。";
+
+    AuctionLogger auctionLogger = AuctionLogger.getInstance();
+    assertFalse(auctionLogger.findMessage(fileName, sellerMessage));
+    assertFalse(auctionLogger.findMessage(fileName, bidderMessage));
+
+  }
+
+  @Test
+  public void test_logged_sell_10000_Etc() throws Exception {
+
+    Auction auction = startAuction();
+
+    User suzuki = generateSuzukiData();
+    users.register(suzuki);
+    users.login(suzuki.getUserName(), suzuki.getPassword());
+    suzuki.bid(auction, 10000);
+
+    auction.onClose();
+
+    String sellerMessage = auction.getItemName() + "のオークションに" +
+            auction.getBidderUser().getUserEmail() + "が" +
+            auction.getNowPrice() + "で販売されました。";
+
+    String bidderMessage = "おめでとうございます。" +
+            auction.getBidderUser().getUserEmail() + "からの" +
+            auction.getItemName() + "のオークションを" +
+            auction.getNowPrice() + "で落札しました。";
+
+    AuctionLogger auctionLogger = AuctionLogger.getInstance();
+    assertTrue(auctionLogger.findMessage(fileName, sellerMessage));
+    assertTrue(auctionLogger.findMessage(fileName, bidderMessage));
+
+  }
+
+  private static String fileName =  "log/log.txt";
+
+  @AfterClass
+  public static void tearDown() {
+    File newdir = new File(fileName);
+    newdir.delete();
   }
 
   private Auction startAuction() throws Exception {

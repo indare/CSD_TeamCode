@@ -2,6 +2,8 @@
 package application;
 
 
+import services.AuctionLogger;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -79,6 +81,11 @@ public class Auction {
                     it.send();
                 }
         );
+
+        if (this.goodsCategory.equals(GoodsCategory.CAR) || this.nowPrice >= 10000) {
+            AuctionLogger auctionLogger = AuctionLogger.getInstance();
+            noticeList.forEach(notice -> auctionLogger.log("log/log.txt", notice.getMessage()));
+        }
     }
 
     public String getItemName() {

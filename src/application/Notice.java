@@ -15,4 +15,8 @@ public class Notice {
         PostOffice postOffice = PostOffice.getInstance();
         postOffice.sendEMail(this.to, this.message);
     }
+
+    public String getMessage() {
+        return this.message;
+    }
 }
