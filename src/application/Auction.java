@@ -2,32 +2,30 @@
 package application;
 
 
-import services.PostOffice;
-
 import java.time.LocalDateTime;
-
-import static java.util.Objects.isNull;
+import java.util.List;
 
 public class Auction {
-    private String userName;
     private String itemName;
     private int startPrice;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private AuctionStatus state;
     private Integer nowPrice;
-    private String bidder;
-    private User user;
+    private User createUser;
     private User bidderUser;
+    private GoodsCategory goodsCategory;
+    private Integer sellerPrice;
+    private Integer buyerPrice;
 
-    public Auction(User user, String userName, String itemName, int startPrice, LocalDateTime startDate, LocalDateTime endDate)
+    public Auction(User createUser, GoodsCategory goodsCategory,String itemName, int startPrice, LocalDateTime startDate, LocalDateTime endDate)
             throws NotSellerCreateAuctionException, NoneLoggedInUserCreateAuctionException, StartTimeIsGreaterEndTimeException, StartTimeIsPassedDateException {
 
-        if (!user.getSellerFlag()) {
+        if (!createUser.getSellerFlag()) {
             throw new NotSellerCreateAuctionException();
         }
 
-        if (!user.getLoginFlag()) {
+        if (!createUser.getLoginFlag()) {
             throw new NoneLoggedInUserCreateAuctionException();
         }
 
@@ -39,14 +37,14 @@ public class Auction {
             throw new StartTimeIsPassedDateException();
         }
 
-        this.userName = userName;
         this.itemName = itemName;
         this.startPrice = startPrice;
         this.nowPrice = startPrice;
         this.startDate = startDate;
         this.endDate = endDate;
         this.state = AuctionStatus.BEFORE_START;
-        this.user = user;
+        this.createUser = createUser;
+        this.goodsCategory = goodsCategory;
     }
 
     public AuctionStatus getState() {
@@ -61,49 +59,54 @@ public class Auction {
         return this.nowPrice;
     }
 
-    public String getBidder() {
-        return this.bidder;
-    }
-
     public void setNowPrice(int bidPrice) {
         this.nowPrice = bidPrice;
-    }
-
-    public void setBidder(String userName) {
-        this.bidder = userName;
-    }
-
-    public String getUserName() {
-        return this.userName;
     }
 
     public void onClose() {
         this.state = AuctionStatus.ENDED;
 
-        if (isNull(this.bidder)) {
-            String message = this.getItemName() + "のオークションに入札者はいませんでした。";
+        this.sellerPrice = (int) (0.98 * this.nowPrice);
 
-            PostOffice postOffice = PostOffice.getInstance();
-            postOffice.sendEMail(user.getUserEmail(), message);
-        } else {
+        AuctionCommissionRuleFactory auctionCommissionRuleFactory = new AuctionCommissionRuleFactory(this);
+        this.buyerPrice = auctionCommissionRuleFactory.calcCommission().getCommission();
 
-            String sellerMessage = this.getItemName() + "のオークションに" + this.bidderUser + "が" + this.nowPrice + "で販売されました。";
+        AuctionNoticeFactory factory = new AuctionNoticeFactory(this);
+        List<Notice> noticeList = factory.getNotice();
 
-            PostOffice postOffice = PostOffice.getInstance();
-            postOffice.sendEMail(user.getUserEmail(), sellerMessage);
-
-            String bidderMessage = "おめでとうございます。" + user.getUserEmail() + "からの" + this.itemName + "のオークションを" + this.nowPrice + "で落札しました。";
-
-            postOffice.sendEMail(bidderUser.getUserEmail(), bidderMessage);
-        }
-
+        noticeList.forEach(
+                (Notice it) -> {
+                    it.send();
+                }
+        );
     }
 
     public String getItemName() {
         return this.itemName;
     }
 
+    public User getCreateUser() {
+        return this.createUser;
+    }
+
     public void setBidderUser(User user) {
         this.bidderUser = user;
+    }
+
+    public User getBidderUser() {
+        return this.bidderUser;
+    }
+
+
+    public Integer getSellerPrice() {
+        return this.sellerPrice;
+    }
+
+    public Integer getBuyerPrice() {
+        return this.buyerPrice;
+    }
+
+    public GoodsCategory getGoodsCategory() {
+        return this.goodsCategory;
     }
 }

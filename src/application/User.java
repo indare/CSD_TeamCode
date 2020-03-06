@@ -59,19 +59,7 @@ public class User {
 
   public void bid(Auction auction, int bidPrice) throws SamePriceException, AuctionCreaterBidException, NoneLoggedInBidAuction {
 
-    if(!this.loginFlag){
-      throw new NoneLoggedInBidAuction();
-    }
-
-    if (auction.getUserName().equals(this.userName)){
-      throw new AuctionCreaterBidException();
-    }
-
-    if (!isNull(auction.getBidder()) && auction.getNowPrice().equals(bidPrice)){
-      throw new SamePriceException();
-    }
-
-    auction.setBidder(this.userName);
+    AuctionBidRule.check(auction,this, bidPrice);
     auction.setBidderUser(this);
     auction.setNowPrice(bidPrice);
   }
