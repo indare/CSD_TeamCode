@@ -1,9 +1,9 @@
 package application.closeFactory.closeProcessor;
 
 import application.Auction;
-import application.AuctionNoticeFactory;
+import application.closeFactory.notice.AuctionNoticeFactory;
 import application.GoodsCategory;
-import application.Notice;
+import application.closeFactory.notice.Notice;
 import services.AuctionLogger;
 
 import java.util.List;
@@ -20,7 +20,6 @@ public class SendMessageProcessor extends CloseProcessor {
     public void run() {
         AuctionNoticeFactory factory = new AuctionNoticeFactory(auction);
         List<Notice> noticeList = factory.getNotice();
-
         AuctionLogger auctionLogger = AuctionLogger.getInstance();
 
         noticeList.forEach( notice -> {

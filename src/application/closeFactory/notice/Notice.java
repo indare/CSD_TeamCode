@@ -1,4 +1,4 @@
-package application;
+package application.closeFactory.notice;
 
 import services.PostOffice;
 

@@ -1,5 +1,6 @@
-package application;
+package application.closeFactory.notice;
 
+import application.Auction;
 import application.emailMessage.ForBidderMessage;
 import application.emailMessage.ForSellerMessage;
 import application.emailMessage.MessageBuilder;
