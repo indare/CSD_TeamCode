@@ -1,7 +1,7 @@
 package application.closeFactory.closeProcessor.outputProcessor.noticeBuilder;
 
 import application.Auction;
-import application.closeFactory.closeProcessor.output.Notice;
+import application.closeFactory.closeProcessor.outputProcessor.output.Notice;
 
 public abstract class MessageBuilder {
     protected Auction auction;

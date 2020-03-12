@@ -1,4 +1,4 @@
-package application.closeFactory.closeProcessor.output;
+package application.closeFactory.closeProcessor.outputProcessor.output;
 
 import services.PostOffice;
 
