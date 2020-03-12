@@ -1,7 +1,6 @@
 package application.closeFactory.closeProcessor.outputProcessor.noticeBuilder;
 
 import application.Auction;
-import application.closeFactory.closeProcessor.output.Log;
 import application.closeFactory.closeProcessor.output.Notice;
 
 public class NoBidderMessage extends MessageBuilder {
@@ -10,13 +9,8 @@ public class NoBidderMessage extends MessageBuilder {
     }
 
     @Override
-    public Notice buildEmail() {
+    public Notice build() {
         return new Notice(auction.getCreateUser().getUserEmail(), buildMessage());
-    }
-
-    @Override
-    public Log buildLog() {
-        return new Log(buildMessage());
     }
 
     private String buildMessage(){

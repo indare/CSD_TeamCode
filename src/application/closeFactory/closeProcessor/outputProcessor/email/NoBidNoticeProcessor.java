@@ -12,6 +12,6 @@ public class NoBidNoticeProcessor extends CloseProcessor
 
     @Override
     public void run() {
-        new NoBidderMessage(this.auction).buildEmail().run();
+        new NoBidderMessage(this.auction).build().run();
     }
 }

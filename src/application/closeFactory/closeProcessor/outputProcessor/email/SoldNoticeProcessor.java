@@ -12,6 +12,6 @@ public class SoldNoticeProcessor extends CloseProcessor
 
     @Override
     public void run() {
-        new ForSellerMessage(this.auction).buildEmail().run();
+        new ForSellerMessage(this.auction).build().run();
     }
 }

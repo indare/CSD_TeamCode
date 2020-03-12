@@ -11,6 +11,6 @@ public class WinningNoticeProcessor extends CloseProcessor {
 
     @Override
     public void run() {
-        new ForBidderMessage(this.auction).buildEmail().run();
+        new ForBidderMessage(this.auction).build().run();
     }
 }
