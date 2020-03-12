@@ -88,15 +88,6 @@ public class Auction {
         return this.hours;
     }
 
-    public void onStart() {
-        this.state = AuctionStatus.STARTED;
-    }
-
-    public void onClose() {
-        this.state = AuctionStatus.ENDED;
-        new CloseFactory().getProcessor(this).forEach(CloseProcessor::run);
-    }
-
     public String getItemName() {
         return this.itemName;
     }
@@ -113,7 +104,6 @@ public class Auction {
         return this.bidderUser;
     }
 
-
     public Integer getSellerPrice() {
         return this.sellerPrice;
     }
@@ -124,5 +114,14 @@ public class Auction {
 
     public GoodsCategory getGoodsCategory() {
         return this.goodsCategory;
+    }
+
+    public void onStart() {
+        this.state = AuctionStatus.STARTED;
+    }
+
+    public void onClose() {
+        this.state = AuctionStatus.ENDED;
+        new CloseFactory().getProcessor(this).forEach(CloseProcessor::run);
     }
 }

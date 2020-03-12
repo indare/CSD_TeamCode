@@ -1,8 +1,8 @@
-package application.closeFactory.notice;
+package application.closeFactory.closeProcessor.output;
 
 import services.PostOffice;
 
-public class Notice {
+public class Notice extends Output {
     private String to;
     private String message;
 
@@ -11,11 +11,13 @@ public class Notice {
         this.message = message;
     }
 
-    public void send() {
+    @Override
+    public void run() {
         PostOffice postOffice = PostOffice.getInstance();
         postOffice.sendEMail(this.to, this.message);
     }
 
+    @Override
     public String getMessage() {
         return this.message;
     }

@@ -17,11 +17,18 @@ public class AuctionTest {
 
   private Users users;
   private AlwaysTrueOffHours alwaysTrueOffHours;
+  private static String fileName =  "log/log.txt";
 
   @Before
   public void setup() {
     this.users = new Users();
     this.alwaysTrueOffHours = new AlwaysTrueOffHours();
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    File newdir = new File(fileName);
+    newdir.delete();
   }
 
   private User generateSellerData(){
@@ -63,18 +70,20 @@ public class AuctionTest {
   }
 
 
-  @Test (expected= NotSellerCreateAuctionException.class)
+  @Test
   public void test_NotSeller_can_not_create_auction() throws EBabyException {
     User tanaka = generateSellerData();
 
     Users users = new Users();
     users.register(tanaka);
 
-    new Auction(tanaka, GoodsCategory.ETC, "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0));
+    try {
+      new Auction(tanaka, GoodsCategory.ETC, "リーダブルコード", 1, LocalDateTime.of(2021, 3, 10, 12, 0, 0), LocalDateTime.of(2021, 3, 11, 12, 0, 0));
+    }catch (NotSellerCreateAuctionException expect){}
 
   }
 
-  @Test (expected= NoneLoggedInUserCreateAuctionException.class)
+  @Test
   public void test_create_auction_need_login() throws EBabyException {
     User tanaka = generateSellerData();
 
@@ -82,11 +91,13 @@ public class AuctionTest {
     users.register(tanaka);
     users.setSeller(tanaka.getUserName());
 
-    new Auction(tanaka, GoodsCategory.ETC,"リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0));
+    try {
+      new Auction(tanaka, GoodsCategory.ETC, "リーダブルコード", 1, LocalDateTime.of(2021, 3, 10, 12, 0, 0), LocalDateTime.of(2021, 3, 11, 12, 0, 0));
+    }catch (NoneLoggedInUserCreateAuctionException expect) {}
 
   }
 
-  @Test (expected = StartTimeIsGreaterEndTimeException.class)
+  @Test
   public void test_auction_startTime_should_be_smaller_than_endTime() throws EBabyException {
     User tanaka = generateSellerData();
 
@@ -95,12 +106,14 @@ public class AuctionTest {
     users.setSeller(tanaka.getUserName());
     users.login(tanaka.getUserName(), tanaka.getPassword());
 
-    new Auction(tanaka, GoodsCategory.ETC,"リーダブルコード", 1,
-        LocalDateTime.of(2020, 3, 11, 12,0,0),
-        LocalDateTime.of(2020, 3, 10, 12,0,0));
+    try {
+      new Auction(tanaka, GoodsCategory.ETC, "リーダブルコード", 1,
+              LocalDateTime.of(2021, 3, 11, 12, 0, 0),
+              LocalDateTime.of(2021, 3, 10, 12, 0, 0));
+    }catch(StartTimeIsGreaterEndTimeException expect){}
   }
 
-  @Test (expected = StartTimeIsPassedDateException.class)
+  @Test
   public void test_auction_startTime_should_be_more_than_now() throws EBabyException {
     User tanaka = generateSellerData();
 
@@ -109,9 +122,11 @@ public class AuctionTest {
     users.setSeller(tanaka.getUserName());
     users.login(tanaka.getUserName(), tanaka.getPassword());
 
-    new Auction(tanaka, GoodsCategory.ETC,"リーダブルコード", 1,
-        LocalDateTime.now().minusSeconds(1),
-        LocalDateTime.now());
+    try {
+      new Auction(tanaka, GoodsCategory.ETC, "リーダブルコード", 1,
+              LocalDateTime.now().minusSeconds(1),
+              LocalDateTime.now());
+    }catch (StartTimeIsPassedDateException expect){}
   }
 
   @Test
@@ -145,7 +160,7 @@ public class AuctionTest {
 
   }
 
-  @Test(expected = NoneLoggedInBidAuctionException.class )
+  @Test
   public void test_need_login_bid_auction() throws Exception{
     Auction auction = startAuction();
     auction.onStart();
@@ -153,11 +168,13 @@ public class AuctionTest {
     User suzuki = generateSuzukiData();
     users.register(suzuki);
 
-    suzuki.bid(auction, 1);
+    try {
+      suzuki.bid(auction, 1);
+    }catch (NoneLoggedInBidAuctionException expect){}
 
   }
 
-  @Test(expected = SamePriceException.class)
+  @Test
   public void test_same_price_can_not_bid_twice() throws Exception {
     Auction auction = startAuction();
 
@@ -171,17 +188,21 @@ public class AuctionTest {
     users.register(david);
     users.login(david.getUserName(), david.getPassword());
 
-    david.bid(auction, 1);
+    try {
+      david.bid(auction, 1);
+    }catch (SamePriceException expect){}
 
   }
 
-  @Test(expected = AuctionCreatorBidException.class)
+  @Test
   public void test_Auction_creator_can_not_bid_own_auction() throws Exception{
     Auction auction = startAuction();
     User user = generateSellerData();
     User seller = this.users.findByUserName(user.getUserName());
 
-    seller.bid(auction, 1);
+    try {
+      seller.bid(auction, 1);
+    }catch (AuctionCreatorBidException expect){}
 
   }
 
@@ -215,6 +236,19 @@ public class AuctionTest {
 
   }
 
+
+  @Test
+  public void test_no_body_bid_auction_send_email() throws Exception {
+    Auction auction = startAuction();
+
+    auction.onClose();
+
+    String soldMessageInclude = "入札者はいませんでした。";
+
+    PostOffice postOffice = PostOffice.getInstance();
+    assertTrue(postOffice.doesLogContain(auction.getCreateUser().getUserEmail(), soldMessageInclude));
+
+  }
   @Test
   public void test_adjust_transaction_prices_for_ETC() throws Exception{
     Auction auction = startAuction();
@@ -283,6 +317,17 @@ public class AuctionTest {
 
 
   @Test
+  public void test_logged_none_sell_auction() throws Exception {
+    Auction auction = startAuction();
+
+    auction.onClose();
+
+    AuctionLogger auctionLogger = AuctionLogger.getInstance();
+    assertTrue(auctionLogger.findMessage(fileName, logMessage(auction)));
+
+  }
+
+  @Test
   public void test_logged_sell_car() throws Exception {
 
     Auction auction = startCarAuction();
@@ -304,8 +349,7 @@ public class AuctionTest {
             auction.getNowPrice() + "で落札しました。";
 
     AuctionLogger auctionLogger = AuctionLogger.getInstance();
-    assertTrue(auctionLogger.findMessage(fileName, sellerMessage));
-    assertTrue(auctionLogger.findMessage(fileName, bidderMessage));
+    assertTrue(auctionLogger.findMessage(fileName, logMessage(auction)));
 
   }
 
@@ -348,18 +392,8 @@ public class AuctionTest {
 
     auction.onClose();
 
-    String sellerMessage = auction.getItemName() + "のオークションに" +
-            auction.getBidderUser().getUserEmail() + "が" +
-            auction.getNowPrice() + "で販売されました。";
-
-    String bidderMessage = "おめでとうございます。" +
-            auction.getBidderUser().getUserEmail() + "からの" +
-            auction.getItemName() + "のオークションを" +
-            auction.getNowPrice() + "で落札しました。";
-
     AuctionLogger auctionLogger = AuctionLogger.getInstance();
-    assertTrue(auctionLogger.findMessage(fileName, sellerMessage));
-    assertTrue(auctionLogger.findMessage(fileName, bidderMessage));
+    assertTrue(auctionLogger.findMessage(fileName, logMessage(auction)));
 
   }
 
@@ -374,26 +408,9 @@ public class AuctionTest {
 
     auction.onClose();
 
-    String sellerMessage = auction.getItemName() + "のオークションに" +
-            auction.getBidderUser().getUserEmail() + "が" +
-            auction.getNowPrice() + "で販売されました。";
-
-    String bidderMessage = "おめでとうございます。" +
-            auction.getBidderUser().getUserEmail() + "からの" +
-            auction.getItemName() + "のオークションを" +
-            auction.getNowPrice() + "で落札しました。";
-
     AuctionLogger auctionLogger = AuctionLogger.getInstance();
-    assertTrue(auctionLogger.findMessage(fileName, sellerMessage));
-    assertTrue(auctionLogger.findMessage(fileName, bidderMessage));
-  }
+    assertTrue(auctionLogger.findMessage(fileName, logMessage(auction)));
 
-  private static String fileName =  "log/log.txt";
-
-  @AfterClass
-  public static void tearDown() {
-    File newdir = new File(fileName);
-    newdir.delete();
   }
 
   private Auction startAuction() throws EBabyException {
@@ -452,6 +469,15 @@ public class AuctionTest {
     users.register(user);
     users.login(user.getUserName(), user.getPassword());
     return new Auction(user, GoodsCategory.CAR,  "car", 1, LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2), alwaysTrueOffHours);
+  }
+
+  private String logMessage(Auction auction) {
+    return "onclose " +
+            "category:" + auction.getGoodsCategory() +
+            "createUser:" + auction.getCreateUser() +
+            "bidder:" + auction.getBidderUser() +
+            "finalPrice:" + auction.getNowPrice();
+
   }
 
 }

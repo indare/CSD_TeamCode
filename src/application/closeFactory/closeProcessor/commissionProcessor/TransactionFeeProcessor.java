@@ -1,12 +1,13 @@
-package application.closeFactory.closeProcessor;
+package application.closeFactory.closeProcessor.commissionProcessor;
 
 import application.Auction;
+import application.closeFactory.closeProcessor.CloseProcessor;
 
 import static application.parameters.Parameters.TRANSACTION_FEE;
 
-public class SellerPriceAdjustProcessor extends CloseProcessor {
+public class TransactionFeeProcessor extends CloseProcessor {
 
-    public SellerPriceAdjustProcessor(Auction auction) {
+    public TransactionFeeProcessor(Auction auction) {
         super(auction);
     }
 
