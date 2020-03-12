@@ -402,7 +402,7 @@ public class AuctionTest {
 
     users.register(user);
     users.login(user.getUserName(), user.getPassword());
-    return new Auction(user, GoodsCategory.ETC,  "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0), alwaysTrueOffHours);
+    return new Auction(user, GoodsCategory.ETC,  "リーダブルコード", 1, LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2), alwaysTrueOffHours);
   }
 
   private Auction startAuctionForOffHour() throws EBabyException {
@@ -415,8 +415,8 @@ public class AuctionTest {
             GoodsCategory.ETC,
             "リーダブルコード",
             1,
-            LocalDateTime.of(2020, 3, 10, 12,0,0),
-            LocalDateTime.of(2020, 3, 11, 12,0,0),
+            LocalDateTime.now().plusHours(1),
+            LocalDateTime.now().plusHours(2),
             alwaysTrueOffHours);
   }
 
@@ -431,8 +431,8 @@ public class AuctionTest {
             GoodsCategory.ETC,
             "aaaaaa",
             1,
-            LocalDateTime.of(2020, 3, 10, 12,0,0),
-            LocalDateTime.of(2020, 3, 11, 12,0,0),
+            LocalDateTime.now().plusHours(1),
+            LocalDateTime.now().plusHours(2),
             alwaysFalseOffHours);
   }
 
@@ -442,7 +442,7 @@ public class AuctionTest {
 
     users.register(user);
     users.login(user.getUserName(), user.getPassword());
-    return new Auction(user, GoodsCategory.DOWNLOAD_SOFTWARE,  "リーダブルコード", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0), alwaysTrueOffHours);
+    return new Auction(user, GoodsCategory.DOWNLOAD_SOFTWARE,  "リーダブルコード", 1, LocalDateTime.now(),  LocalDateTime.now().plusHours(1), alwaysTrueOffHours);
   }
 
   private Auction startCarAuction() throws EBabyException {
@@ -451,7 +451,7 @@ public class AuctionTest {
 
     users.register(user);
     users.login(user.getUserName(), user.getPassword());
-    return new Auction(user, GoodsCategory.CAR,  "car", 1, LocalDateTime.of(2020, 3, 10, 12,0,0), LocalDateTime.of(2020, 3, 11, 12,0,0), alwaysTrueOffHours);
+    return new Auction(user, GoodsCategory.CAR,  "car", 1, LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2), alwaysTrueOffHours);
   }
 
 }
