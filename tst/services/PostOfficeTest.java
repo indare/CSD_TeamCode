@@ -10,6 +10,7 @@ public class PostOfficeTest {
     @Test
     public void test_can_find_email() {
         PostOffice postOffice = PostOffice.getInstance();
+        postOffice.clear();
 
         String address;
         String message;

@@ -442,7 +442,7 @@ public class AuctionTest {
 
     users.register(user);
     users.login(user.getUserName(), user.getPassword());
-    return new Auction(user, GoodsCategory.DOWNLOAD_SOFTWARE,  "リーダブルコード", 1, LocalDateTime.now(),  LocalDateTime.now().plusHours(1), alwaysTrueOffHours);
+    return new Auction(user, GoodsCategory.DOWNLOAD_SOFTWARE,  "リーダブルコード", 1, LocalDateTime.now().plusHours(1),  LocalDateTime.now().plusHours(2), alwaysTrueOffHours);
   }
 
   private Auction startCarAuction() throws EBabyException {
