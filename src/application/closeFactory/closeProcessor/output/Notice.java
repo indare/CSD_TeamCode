@@ -16,9 +16,4 @@ public class Notice extends Output {
         PostOffice postOffice = PostOffice.getInstance();
         postOffice.sendEMail(this.to, this.message);
     }
-
-    @Override
-    public String getMessage() {
-        return this.message;
-    }
 }
