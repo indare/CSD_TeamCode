@@ -2,6 +2,8 @@
 package application;
 
 
+import application.closeFactory.CloseFactory;
+import application.closeFactory.closeProcessor.CloseProcessor;
 import application.exception.*;
 import services.AuctionLogger;
 import services.Hours;
@@ -66,10 +68,6 @@ public class Auction {
         return this.state;
     }
 
-    public void onStart() {
-        this.state = AuctionStatus.STARTED;
-    }
-
     public Integer getNowPrice() {
         return this.nowPrice;
     }
@@ -78,29 +76,25 @@ public class Auction {
         this.nowPrice = bidPrice;
     }
 
-    public void onClose() {
-        this.state = AuctionStatus.ENDED;
-
-        this.sellerPrice = (int) (TRANSACTION_FEE * this.nowPrice);
-
-        AuctionCommissionRuleFactory auctionCommissionRuleFactory = new AuctionCommissionRuleFactory(this);
-        this.buyerPrice = auctionCommissionRuleFactory.calcCommission().getCommission();
-
-        AuctionNoticeFactory factory = new AuctionNoticeFactory(this);
-        List<Notice> noticeList = factory.getNotice();
-
-        AuctionLogger auctionLogger = AuctionLogger.getInstance();
-
-        noticeList.forEach( notice -> {
-            notice.send();
-            if (needLogging()) {
-                auctionLogger.log(LOG_FILE, notice.getMessage());
-            }
-        });
+    public void setSellerPrice(Integer sellerPrice){
+        this.sellerPrice = sellerPrice;
     }
 
-    private Boolean needLogging() {
-        return this.hours.isOffHours() || this.goodsCategory.equals(GoodsCategory.CAR) || this.nowPrice >= HIGH_PRICE;
+    public void setBuyerPrice(Integer buyerPrice){
+        this.buyerPrice = buyerPrice;
+    }
+
+    public Hours getHours(){
+        return this.hours;
+    }
+
+    public void onStart() {
+        this.state = AuctionStatus.STARTED;
+    }
+
+    public void onClose() {
+        this.state = AuctionStatus.ENDED;
+        new CloseFactory().getProcessor(this).forEach(CloseProcessor::run);
     }
 
     public String getItemName() {
